@@ -1,7 +1,7 @@
 import os
 import cv2
 from flask import Flask, render_template, request, send_from_directory
-from effects import apply_noise, apply_sepia
+from effects import add_noise, add_sepia, add_scratches
 
 # Базовая директория проекта (на уровень выше scripts/)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -10,6 +10,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 UPLOAD_FOLDER = os.path.join(BASE_DIR, "test_photos")
 OUTPUT_FOLDER = os.path.join(BASE_DIR, "output")
 TEMPLATES_FOLDER = os.path.join(BASE_DIR, "templates")
+SCRATCH_PATH = os.path.join(BASE_DIR, "scratches", "scratches-png-37699.png")
 
 # Создаём папки, если их нет
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
@@ -30,12 +31,13 @@ def index():
             # Загружаем картинку через OpenCV
             img = cv2.imread(filepath)
 
-            # Применяем эффекты (шум + сепия)
-            img = apply_noise(img, intensity=30)
-            img = apply_sepia(img, strength=0.8)
+            # Применяем эффекты (шум -> сепия -> царапины)
+            img = add_noise(img, intensity=30)
+            img = add_sepia(img, strength=0.8)
+            img = add_scratches(img, SCRATCH_PATH, alpha=0.5)
 
             # Сохраняем результат
-            output_filename = "processed_" + file.filename
+            output_filename = "final_" + file.filename
             output_path = os.path.join(OUTPUT_FOLDER, output_filename)
             cv2.imwrite(output_path, img)
 
