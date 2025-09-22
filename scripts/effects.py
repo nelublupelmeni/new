@@ -2,6 +2,8 @@ import cv2
 import numpy as np
 import os
 
+
+
 def add_noise(image, intensity=25):
     """
     Добавляет гауссов шум к изображению.

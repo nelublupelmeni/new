@@ -1,14 +1,14 @@
 import os
 import cv2
 from flask import Flask, render_template, request, send_from_directory
-from effects import add_noise, add_sepia, add_scratches
+from effects import process_image
 
 # Базовая директория проекта (на уровень выше scripts/)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # Пути
-UPLOAD_FOLDER = os.path.join(BASE_DIR, "test_photos")
-OUTPUT_FOLDER = os.path.join(BASE_DIR, "output")
+UPLOAD_FOLDER = os.path.join(BASE_DIR, "test_photos","uploads")
+OUTPUT_FOLDER = os.path.join(BASE_DIR, "test_photos","output")
 TEMPLATES_FOLDER = os.path.join(BASE_DIR, "templates")
 SCRATCH_PATH = os.path.join(BASE_DIR, "scratches", "scratches-png-37699.png")
 
@@ -20,31 +20,28 @@ os.makedirs(OUTPUT_FOLDER, exist_ok=True)
 app = Flask(__name__, template_folder=TEMPLATES_FOLDER)
 
 @app.route("/", methods=["GET", "POST"])
+@app.route("/", methods=["GET", "POST"])
 def index():
     if request.method == "POST":
         file = request.files["image"]
         if file:
-            # Сохраняем загруженное фото
-            filepath = os.path.join(UPLOAD_FOLDER, file.filename)
-            file.save(filepath)
-
-            # Загружаем картинку через OpenCV
-            img = cv2.imread(filepath)
-
-            # Применяем эффекты (шум -> сепия -> царапины)
-            img = add_noise(img, intensity=30)
-            img = add_sepia(img, strength=0.8)
-            img = add_scratches(img, SCRATCH_PATH, alpha=0.5)
-
-            # Сохраняем результат
-            output_filename = "final_" + file.filename
-            output_path = os.path.join(OUTPUT_FOLDER, output_filename)
-            cv2.imwrite(output_path, img)
-
+            # Сохраняем загруженный файл
+            filename = file.filename
+            input_path = os.path.join(UPLOAD_FOLDER, filename)
+            file.save(input_path)
+            
+            # Обрабатываем изображение
+            output_filename = f"final_{filename}"
+            process_image(
+                input_path=input_path,
+                output_folder=OUTPUT_FOLDER,
+                scratch_path=SCRATCH_PATH
+            )
+            
             # Передаём пути в шаблон
             return render_template(
                 "result.html",
-                original=file.filename,
+                original=filename,
                 processed=output_filename
             )
     return render_template("index.html")
