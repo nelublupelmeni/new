@@ -3,6 +3,8 @@ import cv2
 from flask import Flask, render_template, request, send_from_directory
 from effects import process_image
 
+#ДОБАВИТЬ ЧТЕНИЕ РУССКИХ ПУТЕЙ
+
 # Базовая директория проекта (на уровень выше scripts/)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
