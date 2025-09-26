@@ -1,11 +1,10 @@
 import os
+from flask import Flask, render_template, request, send_from_directory, send_file
+from effects import process_image_dynamic
+from io import BytesIO
 import cv2
-from flask import Flask, render_template, request, send_from_directory
-from effects import process_image
 
-#ДОБАВИТЬ ЧТЕНИЕ РУССКИХ ПУТЕЙ
-
-# Базовая директория проекта (на уровень выше scripts/)
+# Базовая директория проекта
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # Пути
@@ -22,25 +21,25 @@ os.makedirs(OUTPUT_FOLDER, exist_ok=True)
 app = Flask(__name__, template_folder=TEMPLATES_FOLDER)
 
 @app.route("/", methods=["GET", "POST"])
-@app.route("/", methods=["GET", "POST"])
 def index():
     if request.method == "POST":
         file = request.files["image"]
         if file:
-            # Сохраняем загруженный файл
             filename = file.filename
             input_path = os.path.join(UPLOAD_FOLDER, filename)
             file.save(input_path)
             
-            # Обрабатываем изображение
+            # Обработка по умолчанию (статическая)
             output_filename = f"final_{filename}"
-            process_image(
+            process_image_dynamic(
                 input_path=input_path,
                 output_folder=OUTPUT_FOLDER,
-                scratch_path=SCRATCH_PATH
+                scratch_path=SCRATCH_PATH,
+                sepia=0.8,
+                noise=30,
+                scratch_alpha=0.6
             )
             
-            # Передаём пути в шаблон
             return render_template(
                 "result.html",
                 original=filename,
@@ -48,13 +47,40 @@ def index():
             )
     return render_template("index.html")
 
+
+@app.route("/output/<filename>")
+def processed_file(filename):
+    """
+    Динамическая обработка изображения с параметрами ползунков.
+    Параметры: sepia, noise, scratch (0-100)
+    """
+    sepia = float(request.args.get("sepia", 80)) / 100
+    noise = float(request.args.get("noise", 30))
+    scratch_alpha = float(request.args.get("scratch", 60)) / 100
+
+    input_path = os.path.join(UPLOAD_FOLDER, filename.replace("final_", ""))
+    if not os.path.exists(input_path):
+        return "Файл не найден", 404
+
+    # Генерация изображения в памяти
+    img = process_image_dynamic(
+        input_path=input_path,
+        output_folder=None,  # Не сохраняем
+        scratch_path=SCRATCH_PATH,
+        sepia=sepia,
+        noise=noise,
+        scratch_alpha=scratch_alpha
+    )
+
+    # Конвертируем в байты для отправки клиенту
+    _, buffer = cv2.imencode(".jpg", img)
+    return send_file(BytesIO(buffer.tobytes()), mimetype="image/jpeg")
+
+
 @app.route("/test_photos/<filename>")
 def uploaded_file(filename):
     return send_from_directory(UPLOAD_FOLDER, filename)
 
-@app.route("/output/<filename>")
-def processed_file(filename):
-    return send_from_directory(OUTPUT_FOLDER, filename)
 
 if __name__ == "__main__":
     app.run(debug=True)

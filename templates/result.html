@@ -1,31 +1,73 @@
-
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
   <title>Результат обработки</title>
   <!-- Bootstrap 5 -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    #image-container {
+      text-align: center;
+    }
+    #sliders {
+      max-width: 300px;
+    }
+    .slider-label {
+      font-weight: bold;
+      margin-top: 10px;
+    }
+  </style>
 </head>
 <body class="bg-light">
   <div class="container py-5">
     <div class="card shadow-lg p-4 rounded-4">
       <h2 class="text-center mb-4">Результат обработки</h2>
-
-      <div class="row text-center">
-        <div class="col-md-6 mb-4">
-          <h5>Оригинал</h5>
-          <img src="{{ url_for('uploaded_file', filename=original) }}" class="img-fluid rounded shadow">
+      
+      <div class="row">
+        <!-- Изображение по центру -->
+        <div class="col-md-8" id="image-container">
+          <img id="main-image" src="{{ url_for('processed_file', filename=processed) }}" class="img-fluid rounded shadow">
         </div>
-        <div class="col-md-6 mb-4">
-          <h5>Обработанное</h5>
-          <img src="{{ url_for('processed_file', filename=processed) }}" class="img-fluid rounded shadow">
+        
+        <!-- Ползунки -->
+        <div class="col-md-4" id="sliders">
+          <div class="slider-label">Сепия</div>
+          <input type="range" id="sepia-slider" min="0" max="100" value="80" class="form-range">
+
+          <div class="slider-label">Шум</div>
+          <input type="range" id="noise-slider" min="0" max="100" value="30" class="form-range">
+
+          <div class="slider-label">Прозрачность царапин</div>
+          <input type="range" id="scratch-slider" min="0" max="100" value="60" class="form-range">
         </div>
       </div>
 
-      <div class="text-center">
-        <a href="{{ url_for('index') }}" class="btn btn-success btn-lg mt-3">Обработать ещё</a>
+      <div class="text-center mt-4">
+        <a href="{{ url_for('index') }}" class="btn btn-success btn-lg">Обработать ещё</a>
       </div>
     </div>
   </div>
+
+  <script>
+    const sepiaSlider = document.getElementById('sepia-slider');
+    const noiseSlider = document.getElementById('noise-slider');
+    const scratchSlider = document.getElementById('scratch-slider');
+    const mainImage = document.getElementById('main-image');
+
+    // Функция обновления изображения
+    function updateImage() {
+      const sepia = sepiaSlider.value;
+      const noise = noiseSlider.value;
+      const scratch = scratchSlider.value;
+
+      // Формируем GET-параметры
+      const url = `/output/{{ processed }}?sepia=${sepia}&noise=${noise}&scratch=${scratch}&t=${Date.now()}`;
+      
+      mainImage.src = url;
+    }
+
+    sepiaSlider.addEventListener('input', updateImage);
+    noiseSlider.addEventListener('input', updateImage);
+    scratchSlider.addEventListener('input', updateImage);
+  </script>
 </body>
 </html>
