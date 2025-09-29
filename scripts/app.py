@@ -11,7 +11,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 UPLOAD_FOLDER = os.path.join(BASE_DIR, "test_photos","uploads")
 OUTPUT_FOLDER = os.path.join(BASE_DIR, "test_photos","output")
 TEMPLATES_FOLDER = os.path.join(BASE_DIR, "templates")
-SCRATCH_PATH = os.path.join(BASE_DIR, "scratches", "scratches-png-37699.png")
+SCRATCH_PATH = os.path.join(BASE_DIR, "textures", "pngwing.com (2).png")
 
 # Создаём папки, если их нет
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
