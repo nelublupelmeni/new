@@ -67,34 +67,3 @@ def create_preview(file, params):
     # Сбрасываем позицию файла на случай повторного использования
     file.seek(0)
     return process_image(file, params, preview_size=600)
-
-def get_file_extension(format_name):
-    """Возвращает расширение файла для формата"""
-    extensions = {
-        'JPEG': '.jpg',
-        'PNG': '.png',
-        'WEBP': '.webp',
-        'BMP': '.bmp'
-    }
-    return extensions.get(format_name.upper(), '.jpg')
-
-def save_image(pil_image, filepath, format_name, quality=85):
-    """Сохраняет изображение в указанном формате с настройками качества"""
-    format_name = format_name.upper()
-    
-    save_params = {}
-    
-    if format_name in ['JPEG', 'WEBP']:
-        save_params['quality'] = quality
-        if format_name == 'JPEG':
-            # Для JPEG конвертируем в RGB если нужно
-            if pil_image.mode != 'RGB':
-                pil_image = pil_image.convert('RGB')
-        elif format_name == 'WEBP':
-            save_params['quality'] = quality
-    
-    elif format_name == 'PNG':
-        save_params['optimize'] = True
-    
-    pil_image.save(filepath, format=format_name, **save_params)
-    return filepath
