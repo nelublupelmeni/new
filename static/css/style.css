@@ -1,0 +1,226 @@
+/* Основные стили для Photo Aging App */
+body {
+    font-family: Arial, sans-serif;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 20px;
+    line-height: 1.4;
+}
+
+h1 {
+    color: #333;
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+h3 {
+    color: #444;
+    margin-top: 20px;
+    margin-bottom: 15px;
+}
+
+h4 {
+    color: #555;
+    margin: 10px 0;
+}
+
+/* Основной контейнер для фото и ползунков */
+.main-container {
+    display: flex;
+    gap: 30px;
+    margin-bottom: 20px;
+}
+
+/* Левая часть - фотография */
+.preview-section {
+    flex: 1;
+    min-width: 0;
+}
+
+/* Правая часть - ползунки */
+.controls-section {
+    flex: 1;
+    min-width: 300px;
+    max-width: 500px;
+}
+
+/* Стили для ползунков */
+input[type="range"] {
+    width: 100%;
+    margin: 5px 0;
+}
+
+.control-group {
+    margin-bottom: 20px;
+    padding: 15px;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    background-color: #fafafa;
+}
+
+.control-group h4 {
+    margin-top: 0;
+}
+
+/* Стили для кнопок */
+button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    margin: 2px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+
+#removeScratchesBtn {
+    background-color: #dc3545;
+}
+
+#removeScratchesBtn:hover {
+    background-color: #c82333;
+}
+
+/* Стили для меню скачивания */
+#downloadMenu {
+    background: white;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+#downloadMenu button {
+    display: block;
+    width: 100%;
+    text-align: left;
+    margin: 2px 0;
+    background-color: #f8f9fa;
+    color: #333;
+}
+
+#downloadMenu button:hover {
+    background-color: #e9ecef;
+}
+
+/* Стили для предпросмотра */
+#previewImage {
+    max-width: 100%;
+    height: auto;
+    border: 2px solid #007bff;
+    border-radius: 4px;
+    margin-top: 10px;
+}
+
+.preview-buttons {
+    margin-bottom: 10px;
+}
+
+/* Кнопки действий */
+.action-buttons {
+    margin: 20px 0;
+    text-align: center;
+}
+
+/* Компактный список файлов */
+#fileList {
+    margin: 10px 0;
+    max-height: 200px;
+    overflow-y: auto;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    padding: 5px;
+}
+
+#fileList > h4 {
+    margin: 5px 0 10px 0;
+    font-size: 14px;
+    color: #666;
+}
+
+.file-item {
+    display: flex;
+    flex-direction: column;
+    padding: 6px 8px;
+    margin: 2px 0;
+    border: 1px solid #f0f0f0;
+    border-radius: 4px;
+    background-color: #fafafa;
+    font-size: 12px;
+}
+
+.file-item:hover {
+    background-color: #f0f0f0;
+}
+
+.file-item.active-file {
+    border-color: #007bff;
+    background-color: #e3f2fd;
+}
+
+.file-info {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    width: 100%;
+    margin-bottom: 4px;
+}
+
+.file-controls {
+    display: flex;
+    gap: 5px;
+    flex-shrink: 0;
+    margin-right: 10px; /* Отступ между кнопками и названием */
+}
+
+.file-controls button {
+    padding: 4px 8px;
+    font-size: 11px;
+    margin: 0;
+}
+
+.file-name {
+    font-weight: bold;
+    white-space: normal;
+    overflow: visible;
+    text-overflow: unset;
+    flex: 1;
+    word-break: break-word;
+    text-align: left;
+}
+
+.file-status {
+    font-size: 11px;
+    color: #666;
+    text-align: left;
+    width: 100%;
+    margin-top: 2px;
+}
+
+.file-status[style*="color: red"] {
+    color: #dc3545 !important;
+    font-weight: bold;
+}
+
+/* Стили для скроллбара */
+#fileList::-webkit-scrollbar {
+    width: 6px;
+}
+
+#fileList::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+}
+
+#fileList::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 3px;
+}
+
+#fileList::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}

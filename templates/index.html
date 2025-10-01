@@ -2,177 +2,273 @@
 <html>
 <head>
     <title>Photo Aging App</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
     <h1>Состаривание фотографий</h1>
     
     <div>
-        <p>Выберите изображение для обработки:</p>
-        <input type="file" id="fileInput" accept="image/*">
-        <div id="loading" style="display: none;">Обработка...</div>
+        <p>Выберите одно или несколько изображений для обработки:</p>
+        <input type="file" id="fileInput" accept="image/*" multiple>
+        <div id="fileList"></div>
     </div>
 
-    <div>
-        <h3>Эффекты:</h3>
-        
-        <!-- Сепия -->
-        <div>
-            <h4>Сепия: <span id="sepiaValue">0</span></h4>
-            <input type="range" id="sepiaSlider" min="0" max="1" step="0.1" value="0">
+    <!-- Основной контейнер для фото и ползунков -->
+    <div class="main-container">
+        <!-- Левая часть - фотография -->
+        <div class="preview-section">
+            <h3>Предпросмотр:</h3>
+            <div class="preview-buttons">
+                <button id="showOriginalBtn" onclick="showOriginal()">Посмотреть оригинал</button>
+                <button id="showProcessedBtn" onclick="showProcessed()">Посмотреть результат</button>
+            </div>
+            <div>
+                <img id="previewImage" src="#" style="display:none;">
+            </div>
         </div>
 
-        <!-- Шум -->
-        <div>
-            <h4>Шум: <span id="noiseValue">0</span></h4>
-            <input type="range" id="noiseSlider" min="0" max="100" value="0">
-        </div>
+        <!-- Правая часть - ползунки -->
+        <div class="controls-section">
+            <h3>Эффекты:</h3>
+            
+            <!-- Сепия -->
+            <div class="control-group">
+                <h4>Сепия: <span id="sepiaValue">0</span></h4>
+                <input type="range" id="sepiaSlider" min="0" max="1" step="0.1" value="0">
+            </div>
 
-        <!-- Царапины -->
-        <div>
-            <h4>Царапины</h4>
-            <div>
-                <label>Плотность: <span id="densityValue">5</span></label>
-                <input type="range" id="scratchesDensity" min="1" max="20" value="5">
+            <!-- Шум -->
+            <div class="control-group">
+                <h4>Шум: <span id="noiseValue">0</span></h4>
+                <input type="range" id="noiseSlider" min="0" max="100" value="0">
             </div>
-            <div>
-                <label>Прозрачность: <span id="alphaValue">0.5</span></label>
-                <input type="range" id="scratchesAlpha" min="0" max="1" step="0.1" value="0.5">
-            </div>
-            <div>
-                <label>Минимальный размер: <span id="minSizeValue">0.1</span></label>
-                <input type="range" id="scratchesMinSize" min="0.05" max="0.5" step="0.05" value="0.1">
-            </div>
-            <div>
-                <label>Максимальный размер: <span id="maxSizeValue">0.3</span></label>
-                <input type="range" id="scratchesMaxSize" min="0.1" max="1" step="0.05" value="0.3">
-            </div>
-            <button id="scratchesBtn" onclick="toggleScratches()">Сгенерировать царапины</button>
-            <div id="scratchesStatus" style="margin-top: 10px; font-style: italic; color: #666;">
-                Царапины не применены
+
+            <!-- Царапины -->
+            <div class="control-group">
+                <h4>Царапины</h4>
+                <div>
+                    <label>Плотность: <span id="densityValue">5</span></label>
+                    <input type="range" id="scratchesDensity" min="1" max="20" value="5">
+                </div>
+                <div>
+                    <label>Прозрачность: <span id="alphaValue">0.5</span></label>
+                    <input type="range" id="scratchesAlpha" min="0" max="1" step="0.1" value="0.5">
+                </div>
+                <div>
+                    <label>Минимальный размер: <span id="minSizeValue">0.1</span></label>
+                    <input type="range" id="scratchesMinSize" min="0.05" max="0.5" step="0.05" value="0.1">
+                </div>
+                <div>
+                    <label>Максимальный размер: <span id="maxSizeValue">0.3</span></label>
+                    <input type="range" id="scratchesMaxSize" min="0.1" max="1" step="0.05" value="0.3">
+                </div>
+                <div style="margin-top: 10px;">
+                    <button id="generateScratchesBtn" onclick="generateScratches()">Сгенерировать царапины</button>
+                    <button id="removeScratchesBtn" onclick="removeScratches()" style="display: none;">Убрать царапины</button>
+                </div>
             </div>
         </div>
     </div>
 
-    <div>
+    <!-- Кнопки действий -->
+    <div class="action-buttons">
         <button onclick="resetSettings()">Сбросить настройки</button>
-        <button id="downloadBtn" style="display:none;" onclick="downloadImage()">Скачать результат</button>
-    </div>
-
-    <div>
-        <h3>Предпросмотр:</h3>
-        <div style="display: flex; gap: 20px;">
-            <div>
-                <h4>Исходное</h4>
-                <img id="originalPreview" src="#" style="display:none; max-width: 400px;">
-            </div>
-            <div>
-                <h4>Результат</h4>
-                <img id="processedPreview" src="#" style="display:none; max-width: 400px; border: 2px solid blue;">
+        <div style="display: inline-block; position: relative;">
+            <button id="downloadBtn" style="display:none;" onclick="toggleDownloadMenu()">Скачать результат</button>
+            <div id="downloadMenu" style="display: none; position: absolute; background: white; border: 1px solid #ccc; padding: 10px; z-index: 1000;">
+                <div><strong>Форматы:</strong></div>
+                <button onclick="downloadWithFormat('jpg', 'high')">JPG - Высокое качество</button>
+                <button onclick="downloadWithFormat('jpg', 'medium')">JPG - Среднее качество</button>
+                <button onclick="downloadWithFormat('jpg', 'low')">JPG - Низкое качество</button>
+                <button onclick="downloadWithFormat('png')">PNG - Без потерь</button>
+                <button onclick="downloadWithFormat('webp', 'high')">WebP - Высокое качество</button>
+                <button onclick="downloadWithFormat('webp', 'medium')">WebP - Среднее качество</button>
             </div>
         </div>
     </div>
 
     <script>
-        let currentFilename = null;
+        let currentFiles = [];
+        let currentFileIndex = 0;
+        let processedFiles = {};
         let addScratchesFlag = false;
-        let currentFile = null;
+        let currentPreviewMode = 'processed';
+        let originalImageData = null;
 
-        // Обработка загрузки файла
+        // Обработка загрузки файлов
         document.getElementById('fileInput').addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (file) {
-                currentFile = file;
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    document.getElementById('originalPreview').src = e.target.result;
-                    document.getElementById('originalPreview').style.display = 'block';
-                    
-                    // Показываем исходное изображение в результате до применения эффектов
-                    document.getElementById('processedPreview').src = e.target.result;
-                    document.getElementById('processedPreview').style.display = 'block';
-                    document.getElementById('downloadBtn').style.display = 'inline-block';
-                }
-                reader.readAsDataURL(file);
+            const files = Array.from(e.target.files);
+            if (files.length > 0) {
+                currentFiles = files;
+                currentFileIndex = 0;
+                processedFiles = {};
+                currentPreviewMode = 'processed';
+                
+                displayFileList(files);
+                loadFilePreview(files[0]);
+                
+                document.getElementById('downloadBtn').style.display = 'inline-block';
             }
         });
 
-        // Связь ползунков с обработкой - ОСНОВНАЯ ЛОГИКА
-        document.getElementById('sepiaSlider').addEventListener('input', (e) => {
-            document.getElementById('sepiaValue').textContent = e.target.value;
-            applyEffects(); // Немедленно применяем эффекты
-        });
+        // Отображение списка файлов
+        function displayFileList(files) {
+            const fileList = document.getElementById('fileList');
+            fileList.innerHTML = '<h4>Выбранные файлы:</h4>';
+            
+            files.forEach((file, index) => {
+                const fileItem = document.createElement('div');
+                fileItem.className = `file-item ${index === 0 ? 'active-file' : ''}`;
+                fileItem.innerHTML = `
+                    <div class="file-info">
+                        <span class="file-name">${file.name}</span>
+                    </div>
+                    <div class="file-controls">
+                        <button onclick="switchFile(${index})">Выбрать</button>
+                        <button onclick="removeFile(${index})">Удалить</button>
+                    </div>
+                    <div class="file-status" id="fileStatus-${index}">Не обработан</div>
+                `;
+                fileList.appendChild(fileItem);
+            });
+        }
 
-        document.getElementById('noiseSlider').addEventListener('input', (e) => {
-            document.getElementById('noiseValue').textContent = e.target.value;
-            applyEffects(); // Немедленно применяем эффекты
-        });
-
-        // Для параметров царапин - только обновляем значения, но не применяем автоматически
-        document.getElementById('scratchesDensity').addEventListener('input', (e) => {
-            document.getElementById('densityValue').textContent = e.target.value;
-            updateScratchesStatus();
-        });
-
-        document.getElementById('scratchesAlpha').addEventListener('input', (e) => {
-            document.getElementById('alphaValue').textContent = e.target.value;
-            updateScratchesStatus();
-        });
-
-        document.getElementById('scratchesMinSize').addEventListener('input', (e) => {
-            document.getElementById('minSizeValue').textContent = e.target.value;
-            updateScratchesStatus();
-        });
-
-        document.getElementById('scratchesMaxSize').addEventListener('input', (e) => {
-            document.getElementById('maxSizeValue').textContent = e.target.value;
-            updateScratchesStatus();
-        });
-
-        // Функция для обновления статуса царапин
-        function updateScratchesStatus() {
-            const status = document.getElementById('scratchesStatus');
-            if (addScratchesFlag) {
-                status.textContent = 'Царапины применены (настройки изменены)';
-                status.style.color = '#ff9800';
+        // Переключение между файлами
+        function switchFile(index) {
+            if (index >= 0 && index < currentFiles.length) {
+                currentFileIndex = index;
+                loadFilePreview(currentFiles[index]);
+                
+                // Обновляем активные элементы
+                document.querySelectorAll('.file-item').forEach((item, i) => {
+                    item.classList.toggle('active-file', i === index);
+                });
+                
+                // Обновляем превью в зависимости от текущего режима
+                updatePreviewImage();
             }
         }
 
-        // Функция для переключения царапин
-        function toggleScratches() {
-            addScratchesFlag = !addScratchesFlag;
-            const btn = document.getElementById('scratchesBtn');
-            const status = document.getElementById('scratchesStatus');
-            
-            if (addScratchesFlag) {
-                btn.textContent = 'Убрать царапины';
-                btn.style.background = '#4CAF50';
-                btn.style.color = 'white';
-                status.textContent = 'Царапины применены';
-                status.style.color = '#4CAF50';
-            } else {
-                btn.textContent = 'Сгенерировать царапины';
-                btn.style.background = '';
-                btn.style.color = '';
-                status.textContent = 'Царапины не применены';
-                status.style.color = '#666';
+        // Удаление файла из списка
+        function removeFile(index) {
+            if (currentFiles.length <= 1) {
+                alert('Должен остаться хотя бы один файл');
+                return;
             }
             
+            const removedFile = currentFiles[index];
+            currentFiles.splice(index, 1);
+            
+            // Обновляем текущий индекс
+            if (currentFileIndex >= index) {
+                currentFileIndex = Math.max(0, currentFileIndex - 1);
+            }
+            
+            // Удаляем из обработанных
+            delete processedFiles[removedFile.name];
+            
+            // Обновляем интерфейс
+            displayFileList(currentFiles);
+            loadFilePreview(currentFiles[currentFileIndex]);
+        }
+
+        // Загрузка превью файла
+        function loadFilePreview(file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                originalImageData = e.target.result;
+                updatePreviewImage();
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // Обновление отображаемого изображения в зависимости от режима
+        function updatePreviewImage() {
+            const previewImg = document.getElementById('previewImage');
+            const currentFile = currentFiles[currentFileIndex];
+            
+            if (currentPreviewMode === 'original') {
+                previewImg.src = originalImageData;
+            } else {
+                if (processedFiles[currentFile.name]) {
+                    previewImg.src = '/download/' + processedFiles[currentFile.name];
+                } else {
+                    previewImg.src = originalImageData;
+                }
+            }
+            
+            previewImg.style.display = 'block';
+        }
+
+        // Показать оригинал
+        function showOriginal() {
+            currentPreviewMode = 'original';
+            updatePreviewImage();
+        }
+
+        // Показать результат
+        function showProcessed() {
+            currentPreviewMode = 'processed';
+            updatePreviewImage();
+        }
+
+        // Переключение меню скачивания
+        function toggleDownloadMenu() {
+            const menu = document.getElementById('downloadMenu');
+            menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+        }
+
+        // Закрытие меню при клике вне его
+        document.addEventListener('click', function(event) {
+            const downloadBtn = document.getElementById('downloadBtn');
+            const downloadMenu = document.getElementById('downloadMenu');
+            if (!downloadBtn.contains(event.target) && !downloadMenu.contains(event.target)) {
+                downloadMenu.style.display = 'none';
+            }
+        });
+
+        // Скачивание с выбранным форматом и качеством
+        function downloadWithFormat(format, quality = null) {
+            const currentFile = currentFiles[currentFileIndex];
+            if (!processedFiles[currentFile.name]) {
+                alert('Сначала обработайте изображение');
+                return;
+            }
+
+            let qualityParam = '';
+            if (quality) {
+                qualityParam = `?quality=${quality}&format=${format}`;
+            } else {
+                qualityParam = `?format=${format}`;
+            }
+
+            window.location.href = '/download/' + processedFiles[currentFile.name] + qualityParam;
+            document.getElementById('downloadMenu').style.display = 'none';
+        }
+
+        // Функция для генерации царапин
+        function generateScratches() {
+            addScratchesFlag = true;
+            document.getElementById('removeScratchesBtn').style.display = 'inline-block';
+            applyEffects();
+        }
+
+        // Функция для удаления царапин
+        function removeScratches() {
+            addScratchesFlag = false;
+            document.getElementById('removeScratchesBtn').style.display = 'none';
             applyEffects();
         }
 
         // ОСНОВНАЯ ФУНКЦИЯ ПРИМЕНЕНИЯ ЭФФЕКТОВ
         async function applyEffects() {
-            if (!currentFile) return;
+            if (!currentFiles.length) return;
             
-            const loading = document.getElementById('loading');
-            const previewImg = document.getElementById('processedPreview');
-            
-            loading.style.display = 'block';
+            const currentFile = currentFiles[currentFileIndex];
 
             const formData = new FormData();
             formData.append('image', currentFile);
             
-            // Сбор параметров
             const params = {
                 'sepia_strength': document.getElementById('sepiaSlider').value,
                 'noise_intensity': document.getElementById('noiseSlider').value,
@@ -196,34 +292,36 @@
                 const result = await response.json();
                 
                 if (result.success) {
-                    // Обновляем превью
-                    previewImg.src = '/download/' + result.filename;
-                    currentFilename = result.filename;
+                    processedFiles[currentFile.name] = result.filename;
+                    updateFileStatus(currentFileIndex, 'Обработан');
                     
-                    // Сбрасываем статус изменений царапин
-                    if (addScratchesFlag) {
-                        document.getElementById('scratchesStatus').style.color = '#4CAF50';
-                        document.getElementById('scratchesStatus').textContent = 'Царапины применены';
+                    if (currentPreviewMode === 'processed') {
+                        updatePreviewImage();
                     }
                 } else {
                     console.error('Error:', result.error);
+                    updateFileStatus(currentFileIndex, 'Ошибка: ' + result.error);
                 }
             } catch (error) {
                 console.error('Request failed:', error);
-            } finally {
-                loading.style.display = 'none';
+                updateFileStatus(currentFileIndex, 'Ошибка сети');
             }
         }
 
-        // Скачивание результата
-        function downloadImage() {
-            if (currentFilename) {
-                window.location.href = '/download/' + currentFilename;
+        // Обновление статуса файла
+        function updateFileStatus(index, status) {
+            const statusElement = document.getElementById(`fileStatus-${index}`);
+            if (statusElement) {
+                statusElement.textContent = status;
+                if (status.includes('Ошибка')) {
+                    statusElement.style.color = 'red';
+                } else {
+                    statusElement.style.color = '#666';
+                }
             }
         }
 
         function resetSettings() {
-            // Сбрасываем ползунки
             document.getElementById('sepiaSlider').value = 0;
             document.getElementById('noiseSlider').value = 0;
             document.getElementById('scratchesDensity').value = 5;
@@ -231,7 +329,6 @@
             document.getElementById('scratchesMinSize').value = 0.1;
             document.getElementById('scratchesMaxSize').value = 0.3;
             
-            // Обновляем отображаемые значения
             document.getElementById('sepiaValue').textContent = '0';
             document.getElementById('noiseValue').textContent = '0';
             document.getElementById('densityValue').textContent = '5';
@@ -239,19 +336,21 @@
             document.getElementById('minSizeValue').textContent = '0.1';
             document.getElementById('maxSizeValue').textContent = '0.3';
             
-            // Сбрасываем царапины
             addScratchesFlag = false;
-            const btn = document.getElementById('scratchesBtn');
-            const status = document.getElementById('scratchesStatus');
-            btn.textContent = 'Сгенерировать царапины';
-            btn.style.background = '';
-            btn.style.color = '';
-            status.textContent = 'Царапины не применены';
-            status.style.color = '#666';
+            document.getElementById('removeScratchesBtn').style.display = 'none';
             
-            // Применяем сброс
             applyEffects();
         }
+
+        document.getElementById('sepiaSlider').addEventListener('input', (e) => {
+            document.getElementById('sepiaValue').textContent = e.target.value;
+            applyEffects();
+        });
+
+        document.getElementById('noiseSlider').addEventListener('input', (e) => {
+            document.getElementById('noiseValue').textContent = e.target.value;
+            applyEffects();
+        });
     </script>
 </body>
 </html>
