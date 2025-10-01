@@ -1,5 +1,5 @@
-# Используем официальный Python образ
-FROM python:3.11-slim
+# Используем официальный Python образ с более старой версией ОС для совместимости
+FROM python:3.9-slim
 
 # Устанавливаем системные зависимости для OpenCV
 RUN apt-get update && apt-get install -y \
@@ -7,7 +7,8 @@ RUN apt-get update && apt-get install -y \
     libsm6 \
     libxext6 \
     libxrender-dev \
-    libgl1-mesa-glx \
+    libgl1 \
+    libgomp1 \
     && rm -rf /var/lib/apt/lists/*
 
 # Создаем директорию приложения
