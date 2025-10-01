@@ -133,9 +133,11 @@
             });
         }
 
-        // Переключение между файлами
         function switchFile(index) {
             if (index >= 0 && index < currentFiles.length) {
+                // ✅ ДОБАВЛЯЕМ СБРОС НАСТРОЕК ПЕРЕД ПЕРЕКЛЮЧЕНИЕМ
+                resetSettings();
+                
                 currentFileIndex = index;
                 loadFilePreview(currentFiles[index]);
                 
@@ -144,33 +146,34 @@
                     item.classList.toggle('active-file', i === index);
                 });
                 
-                // Обновляем превью в зависимости от текущего режима
                 updatePreviewImage();
             }
-        }
+}
 
-        // Удаление файла из списка
         function removeFile(index) {
-            if (currentFiles.length <= 1) {
-                alert('Должен остаться хотя бы один файл');
-                return;
+                if (currentFiles.length <= 1) {
+                    alert('Должен остаться хотя бы один файл');
+                    return;
+                }
+                
+                const removedFile = currentFiles[index];
+                currentFiles.splice(index, 1);
+                
+                // Обновляем текущий индекс
+                if (currentFileIndex >= index) {
+                    currentFileIndex = Math.max(0, currentFileIndex - 1);
+                }
+                
+                // Удаляем из обработанных
+                delete processedFiles[removedFile.name];
+                
+                // ✅ ДОБАВЛЯЕМ СБРОС НАСТРОЕК ПРИ УДАЛЕНИИ ФАЙЛА
+                resetSettings();
+                
+                // Обновляем интерфейс
+                displayFileList(currentFiles);
+                loadFilePreview(currentFiles[currentFileIndex]);
             }
-            
-            const removedFile = currentFiles[index];
-            currentFiles.splice(index, 1);
-            
-            // Обновляем текущий индекс
-            if (currentFileIndex >= index) {
-                currentFileIndex = Math.max(0, currentFileIndex - 1);
-            }
-            
-            // Удаляем из обработанных
-            delete processedFiles[removedFile.name];
-            
-            // Обновляем интерфейс
-            displayFileList(currentFiles);
-            loadFilePreview(currentFiles[currentFileIndex]);
-        }
 
         // Загрузка превью файла
         function loadFilePreview(file) {
@@ -323,6 +326,7 @@
 
         function resetSettings() {
             document.getElementById('sepiaSlider').value = 0;
+            document.getElementById('sepiaSlider').value = 0;
             document.getElementById('noiseSlider').value = 0;
             document.getElementById('scratchesDensity').value = 5;
             document.getElementById('scratchesAlpha').value = 0.5;
@@ -338,7 +342,7 @@
             
             addScratchesFlag = false;
             document.getElementById('removeScratchesBtn').style.display = 'none';
-            
+                    
             applyEffects();
         }
 
