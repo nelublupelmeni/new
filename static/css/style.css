@@ -1,4 +1,4 @@
-/* Основные стили для Photo Aging App */
+
 body {
     font-family: Arial, sans-serif;
     max-width: 1400px;
@@ -174,7 +174,7 @@ button:hover {
     display: flex;
     gap: 5px;
     flex-shrink: 0;
-    margin-right: 10px; /* Отступ между кнопками и названием */
+    margin-right: 10px;
 }
 
 .file-controls button {
