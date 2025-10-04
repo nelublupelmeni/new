@@ -88,6 +88,7 @@
     </div>
 
     <script>
+        // храним текущие файлы и их состояние
         let currentFiles = [];
         let currentFileIndex = 0;
         let processedFiles = {};
@@ -95,7 +96,7 @@
         let currentPreviewMode = 'processed';
         let originalImageData = null;
 
-        // Обработка загрузки файлов
+        // обработка загрузки файлов пользователем
         document.getElementById('fileInput').addEventListener('change', function(e) {
             const files = Array.from(e.target.files);
             if (files.length > 0) {
@@ -107,11 +108,12 @@
                 displayFileList(files);
                 loadFilePreview(files[0]);
                 
+                // показываем кнопку скачивания
                 document.getElementById('downloadBtn').style.display = 'inline-block';
             }
         });
 
-        // Отображение списка файлов
+        // отображаем список загруженных файлов
         function displayFileList(files) {
             const fileList = document.getElementById('fileList');
             fileList.innerHTML = '<h4>Выбранные файлы:</h4>';
@@ -133,6 +135,7 @@
             });
         }
 
+        // переключаемся на другой файл
         function switchFile(index) {
             if (index >= 0 && index < currentFiles.length) {
                 
@@ -141,41 +144,42 @@
                 currentFileIndex = index;
                 loadFilePreview(currentFiles[index]);
                 
-                // Обновляем активные элементы
+                // обновляем активные элементы в списке
                 document.querySelectorAll('.file-item').forEach((item, i) => {
                     item.classList.toggle('active-file', i === index);
                 });
                 
                 updatePreviewImage();
             }
-}
+        }
 
+        // удаляем файл из списка
         function removeFile(index) {
-                if (currentFiles.length <= 1) {
-                    alert('Должен остаться хотя бы один файл');
-                    return;
-                }
-                
-                const removedFile = currentFiles[index];
-                currentFiles.splice(index, 1);
-                
-                // Обновляем текущий индекс
-                if (currentFileIndex >= index) {
-                    currentFileIndex = Math.max(0, currentFileIndex - 1);
-                }
-                
-                // Удаляем из обработанных
-                delete processedFiles[removedFile.name];
-                
-                // ✅ ДОБАВЛЯЕМ СБРОС НАСТРОЕК ПРИ УДАЛЕНИИ ФАЙЛА
-                resetSettings();
-                
-                // Обновляем интерфейс
-                displayFileList(currentFiles);
-                loadFilePreview(currentFiles[currentFileIndex]);
+            if (currentFiles.length <= 1) {
+                alert('Должен остаться хотя бы один файл');
+                return;
             }
+            
+            const removedFile = currentFiles[index];
+            currentFiles.splice(index, 1);
+            
+            // обновляем текущий индекс
+            if (currentFileIndex >= index) {
+                currentFileIndex = Math.max(0, currentFileIndex - 1);
+            }
+            
+            // удаляем из обработанных
+            delete processedFiles[removedFile.name];
+            
+            // сбрасываем настройки при удалении файла
+            resetSettings();
+            
+            // обновляем интерфейс
+            displayFileList(currentFiles);
+            loadFilePreview(currentFiles[currentFileIndex]);
+        }
 
-        // Загрузка превью файла
+        // загружаем превью файла
         function loadFilePreview(file) {
             const reader = new FileReader();
             reader.onload = function(e) {
@@ -185,7 +189,7 @@
             reader.readAsDataURL(file);
         }
 
-        // Обновление отображаемого изображения в зависимости от режима
+        // обновляем отображаемое изображение в зависимости от режима
         function updatePreviewImage() {
             const previewImg = document.getElementById('previewImage');
             const currentFile = currentFiles[currentFileIndex];
@@ -203,25 +207,25 @@
             previewImg.style.display = 'block';
         }
 
-        // Показать оригинал
+        // показываем оригинал изображения
         function showOriginal() {
             currentPreviewMode = 'original';
             updatePreviewImage();
         }
 
-        // Показать результат
+        // показываем обработанное изображение
         function showProcessed() {
             currentPreviewMode = 'processed';
             updatePreviewImage();
         }
 
-        // Переключение меню скачивания
+        // переключаем меню скачивания
         function toggleDownloadMenu() {
             const menu = document.getElementById('downloadMenu');
             menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
         }
 
-        // Закрытие меню при клике вне его
+        // закрываем меню при клике вне его
         document.addEventListener('click', function(event) {
             const downloadBtn = document.getElementById('downloadBtn');
             const downloadMenu = document.getElementById('downloadMenu');
@@ -230,7 +234,7 @@
             }
         });
 
-        // Скачивание с выбранным форматом и качеством
+        // скачиваем с выбранным форматом и качеством
         function downloadWithFormat(format, quality = null) {
             const currentFile = currentFiles[currentFileIndex];
             if (!processedFiles[currentFile.name]) {
@@ -249,21 +253,21 @@
             document.getElementById('downloadMenu').style.display = 'none';
         }
 
-        // Функция для генерации царапин
+        // генерируем царапины на изображении
         function generateScratches() {
             addScratchesFlag = true;
             document.getElementById('removeScratchesBtn').style.display = 'inline-block';
             applyEffects();
         }
 
-        // Функция для удаления царапин
+        // убираем царапины с изображения
         function removeScratches() {
             addScratchesFlag = false;
             document.getElementById('removeScratchesBtn').style.display = 'none';
             applyEffects();
         }
 
-        // ОСНОВНАЯ ФУНКЦИЯ ПРИМЕНЕНИЯ ЭФФЕКТОВ
+        // основная функция применения эффектов к изображению
         async function applyEffects() {
             if (!currentFiles.length) return;
             
@@ -272,6 +276,7 @@
             const formData = new FormData();
             formData.append('image', currentFile);
             
+            // собираем параметры эффектов
             const params = {
                 'sepia_strength': document.getElementById('sepiaSlider').value,
                 'noise_intensity': document.getElementById('noiseSlider').value,
@@ -282,11 +287,13 @@
                 'scratches_max_size': document.getElementById('scratchesMaxSize').value
             };
 
+            // добавляем параметры в formData
             for (const [key, value] of Object.entries(params)) {
                 formData.append(key, value);
             }
 
             try {
+                // отправляем запрос на сервер для обработки
                 const response = await fetch('/process', {
                     method: 'POST',
                     body: formData
@@ -295,9 +302,11 @@
                 const result = await response.json();
                 
                 if (result.success) {
+                    // сохраняем результат обработки
                     processedFiles[currentFile.name] = result.filename;
                     updateFileStatus(currentFileIndex, 'Обработан');
                     
+                    // обновляем превью если в режиме просмотра результата
                     if (currentPreviewMode === 'processed') {
                         updatePreviewImage();
                     }
@@ -311,7 +320,7 @@
             }
         }
 
-        // Обновление статуса файла
+        // обновляем статус файла в списке
         function updateFileStatus(index, status) {
             const statusElement = document.getElementById(`fileStatus-${index}`);
             if (statusElement) {
@@ -324,6 +333,7 @@
             }
         }
 
+        // сбрасываем все настройки к значениям по умолчанию
         function resetSettings() {
             document.getElementById('sepiaSlider').value = 0;
             document.getElementById('sepiaSlider').value = 0;
@@ -333,6 +343,7 @@
             document.getElementById('scratchesMinSize').value = 0.1;
             document.getElementById('scratchesMaxSize').value = 0.3;
             
+            // обновляем отображаемые значения
             document.getElementById('sepiaValue').textContent = '0';
             document.getElementById('noiseValue').textContent = '0';
             document.getElementById('densityValue').textContent = '5';
@@ -340,17 +351,21 @@
             document.getElementById('minSizeValue').textContent = '0.1';
             document.getElementById('maxSizeValue').textContent = '0.3';
             
+            // сбрасываем флаг царапин
             addScratchesFlag = false;
             document.getElementById('removeScratchesBtn').style.display = 'none';
                     
+            // применяем эффекты с новыми настройками
             applyEffects();
         }
 
+        // слушаем изменения ползунка сепии
         document.getElementById('sepiaSlider').addEventListener('input', (e) => {
             document.getElementById('sepiaValue').textContent = e.target.value;
             applyEffects();
         });
 
+        // слушаем изменения ползунка шума
         document.getElementById('noiseSlider').addEventListener('input', (e) => {
             document.getElementById('noiseValue').textContent = e.target.value;
             applyEffects();
